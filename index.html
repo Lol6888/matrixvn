@@ -3,6 +3,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
   :root{
+    color-scheme:light;
     --bg:#FFFFFF; --ink:#17191C; --ink-soft:#5C6670; --line:#E6E8EB;
     --panel:#F7F8F9; --panel-2:#F0F2F4;
     --nav:#0A0B0D; --nav-ink:#FFFFFF; --nav-soft:#A9B0B8;
@@ -14,6 +15,7 @@
   }
   @media (prefers-color-scheme: dark){
     :root{
+      color-scheme:dark;
       --bg:#0E0F11; --ink:#ECEEF0; --ink-soft:#98A0A8; --line:#24272B;
       --panel:#16181B; --panel-2:#1C1F23;
       --nav:#000000; --nav-ink:#FFFFFF; --nav-soft:#9199A1;
@@ -23,6 +25,7 @@
     }
   }
   :root[data-theme="light"]{
+    color-scheme:light;
     --bg:#FFFFFF; --ink:#17191C; --ink-soft:#5C6670; --line:#E6E8EB;
     --panel:#F7F8F9; --panel-2:#F0F2F4;
     --nav:#0A0B0D; --nav-ink:#FFFFFF; --nav-soft:#A9B0B8;
@@ -31,6 +34,7 @@
     --cipher-bg:#0A0B0D; --cipher-fg:#3FD7A8; --cipher-line:#26292E;
   }
   :root[data-theme="dark"]{
+    color-scheme:dark;
     --bg:#0E0F11; --ink:#ECEEF0; --ink-soft:#98A0A8; --line:#24272B;
     --panel:#16181B; --panel-2:#1C1F23;
     --nav:#000000; --nav-ink:#FFFFFF; --nav-soft:#9199A1;
@@ -123,14 +127,21 @@
   .demo-foot b{color:var(--ink)}
 
   /* ---- Feature rows (alternating, matrix.org style) ---- */
-  .row{display:grid; grid-template-columns:1fr 1fr; gap:60px; align-items:center; padding-block:26px}
-  .row + .row{margin-top:28px}
-  @media (max-width:860px){ .row{grid-template-columns:1fr; gap:30px} .row .art{order:-1} }
+  .row{display:grid; grid-template-columns:1fr minmax(0,320px); gap:60px; align-items:center; padding-block:18px}
+  .row + .row{margin-top:10px}
+  .row.flip{grid-template-columns:minmax(0,320px) 1fr}
   .row.flip .txt{order:2}
-  .row h3{font-size:clamp(23px,3vw,30px); margin-bottom:14px}
-  .row p{color:var(--ink-soft); font-size:17px; max-width:46ch}
-  .row .art{background:var(--panel); border:1px solid var(--line); border-radius:20px; aspect-ratio:4/3; display:flex; align-items:center; justify-content:center; overflow:hidden}
-  .row .art svg{width:74%; height:74%}
+  .step-num{display:inline-block; font-size:12.5px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--green-deep); margin-bottom:10px}
+  .row h3{font-size:clamp(21px,2.6vw,27px); margin-bottom:12px}
+  .row p{color:var(--ink-soft); font-size:16.5px; max-width:44ch}
+  .row .art{background:var(--panel); border:1px solid var(--line); border-radius:18px; aspect-ratio:1/1; width:100%; display:flex; align-items:center; justify-content:center; overflow:hidden}
+  .row .art svg{width:58%; height:58%}
+  @media (max-width:860px){
+    .row, .row.flip{grid-template-columns:1fr; gap:22px}
+    .row .art{order:-1; max-width:220px; justify-self:center}
+    .row.flip .txt{order:0}
+    .row p{max-width:none}
+  }
 
   /* ---- Download ---- */
   .dl{background:var(--nav); color:var(--nav-ink)}
@@ -193,6 +204,81 @@
   footer a{color:var(--nav-soft); text-decoration:none; display:block; margin-bottom:9px}
   footer a:hover{color:#fff}
   footer .disc{margin-top:34px; padding-top:22px; border-top:1px solid rgba(255,255,255,.1); font-size:12.5px; line-height:1.6; color:#7A828A; max-width:80ch}
+
+  /* ---- Contact form ---- */
+  .contact{background:var(--panel); border-top:1px solid var(--line)}
+  .form-card{max-width:640px; margin:40px auto 0; background:var(--bg); border:1px solid var(--line); border-radius:20px; padding:36px 34px}
+  @media (max-width:560px){ .form-card{padding:26px 20px} }
+  .form-grid{display:grid; grid-template-columns:1fr 1fr; gap:18px}
+  @media (max-width:560px){ .form-grid{grid-template-columns:1fr} }
+  .field{display:flex; flex-direction:column; gap:7px}
+  .field.full{grid-column:1 / -1}
+  .field label{font-size:13.5px; font-weight:600; color:var(--ink)}
+  .field label .req{color:var(--green-deep)}
+  .field input,.field select,.field textarea{
+    font:inherit; color:var(--ink); background:var(--bg); border:1.5px solid var(--line);
+    border-radius:10px; padding:11px 13px; width:100%; transition:border-color .15s ease;
+  }
+  .field textarea{resize:vertical; min-height:110px}
+  .field input:focus,.field select:focus,.field textarea:focus{outline:none; border-color:var(--green)}
+  .field select{appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235C6670' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 14px center; padding-right:36px}
+  .hp{position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden}
+  .form-actions{margin-top:22px; display:flex; align-items:center; gap:18px; flex-wrap:wrap}
+  .form-actions .pill{border:none}
+  .form-actions .pill[disabled]{opacity:.6; cursor:default; transform:none}
+  .form-note{font-size:13px; color:var(--ink-soft); margin:0}
+  .form-msg{margin-top:20px; padding:16px 18px; border-radius:12px; font-size:15px; display:none}
+  .form-msg.ok{display:block; background:var(--green-tint); color:var(--green-deep); border:1px solid var(--green)}
+  .form-msg.err{display:block; background:var(--deny-tint); color:var(--deny); border:1px solid var(--deny)}
+  .form-msg a{color:inherit; font-weight:600}
+
+  /* ---- Mobile ---- */
+  @media (max-width:640px){
+    body{font-size:16px}
+    .wrap{padding-inline:18px}
+    section{padding-block:52px}
+    h2{font-size:clamp(23px,6.4vw,29px)}
+    .sub{font-size:16px; margin-top:12px}
+    .eyebrow{font-size:12px}
+    .pill{padding:12px 24px; font-size:15.5px}
+
+    .nav .wrap{height:56px; gap:12px}
+    .logo{font-size:16.5px}
+    .logo .mk{width:22px; height:22px}
+    .nav .pill{padding:7px 16px; font-size:13.5px}
+
+    .hero .wrap{padding-block:40px 46px; gap:34px}
+    .hero h1{font-size:clamp(27px,7.6vw,34px)}
+    .hero .lead{font-size:16.5px; margin-top:16px}
+    .hero-cta{gap:10px; margin-top:26px}
+    .hero-cta .pill{flex:1 1 100%; justify-content:center}
+    .hero .trust{font-size:12.5px; margin-top:22px}
+    .phone{width:230px}
+
+    .demo-grid{margin-top:28px; gap:10px}
+    .pane{padding:15px}
+    .cipher-out{font-size:12px; min-height:3em}
+    .demo-foot{font-size:14.5px; margin-top:18px}
+
+    .badges{gap:12px; margin-top:26px}
+    .badge{flex:1 1 100%; min-width:0; justify-content:center}
+    .dl .platforms{font-size:13px}
+
+    .table-scroll{margin-top:28px}
+    th,td{padding:13px 14px}
+
+    .honest ul{padding-left:20px}
+    .faq{margin-top:26px}
+    summary{font-size:16px; padding:16px 2px}
+
+    .form-card{margin-top:28px}
+    .form-actions{gap:12px}
+    .form-actions .pill{flex:1 1 100%; justify-content:center}
+    .form-note{font-size:12.5px}
+
+    footer{padding-block:38px 32px}
+    footer .cols{grid-template-columns:1fr; gap:26px}
+  }
 </style>
 
 <!-- ========================= NAV ========================= -->
@@ -210,6 +296,7 @@
       <a href="#how">Cách hoạt động</a>
       <a href="#compare">So sánh</a>
       <a href="#faq">Hỏi đáp</a>
+      <a href="#contact">Liên hệ</a>
       <a class="pill" href="#download">Tải ứng dụng</a>
     </nav>
   </div>
@@ -287,6 +374,7 @@
 
     <div class="row">
       <div class="txt">
+        <span class="step-num">Bước 1</span>
         <h3>Bạn khóa hộp trước khi gửi</h3>
         <p>Tin nhắn được khóa ngay trên điện thoại hoặc máy tính của bạn, trước khi rời khỏi máy dù chỉ một giây. Chìa khóa được sinh ra và ở lại trên thiết bị của bạn.</p>
       </div>
@@ -302,6 +390,7 @@
 
     <div class="row flip">
       <div class="txt">
+        <span class="step-num">Bước 2</span>
         <h3>Người đưa thư chỉ chuyển, không mở</h3>
         <p>Máy chủ đóng vai người đưa thư: chuyển chiếc hộp đến đúng người. Nhưng máy chủ <b>không có chìa</b> — nên dù muốn cũng không thể mở ra xem bên trong.</p>
       </div>
@@ -318,6 +407,7 @@
 
     <div class="row">
       <div class="txt">
+        <span class="step-num">Bước 3</span>
         <h3>Chỉ người nhận mở được</h3>
         <p>Chiếc hộp chỉ mở ra được trên máy người nhận, nơi giữ chiếc chìa duy nhất — không ở bất kỳ điểm nào trên đường đi. Trong ngành gọi đây là <b>mã hóa đầu cuối</b> (end-to-end encryption).</p>
       </div>
@@ -446,14 +536,69 @@
   </div>
 </section>
 
+<!-- ========================= CONTACT FORM ========================= -->
+<section class="contact" id="contact">
+  <div class="wrap">
+    <div class="center">
+      <span class="eyebrow">Liên hệ</span>
+      <h2>Đăng ký tư vấn &amp; triển khai</h2>
+      <p class="sub">Để lại thông tin, chúng tôi liên hệ lại trong thời gian sớm nhất để tư vấn và cấp tài khoản dùng thử.</p>
+    </div>
+
+    <form class="form-card" id="contact-form" novalidate>
+      <div class="form-grid">
+        <div class="field">
+          <label for="f-name">Họ và tên <span class="req">*</span></label>
+          <input id="f-name" name="Họ và tên" type="text" required autocomplete="name" placeholder="Nguyễn Văn A">
+        </div>
+        <div class="field">
+          <label for="f-org">Tên tổ chức / công ty</label>
+          <input id="f-org" name="Tổ chức" type="text" autocomplete="organization" placeholder="Công ty ABC">
+        </div>
+        <div class="field">
+          <label for="f-email">Email <span class="req">*</span></label>
+          <input id="f-email" name="Email" type="email" required autocomplete="email" placeholder="ban@congty.vn">
+        </div>
+        <div class="field">
+          <label for="f-phone">Số điện thoại / Zalo</label>
+          <input id="f-phone" name="Điện thoại" type="tel" autocomplete="tel" inputmode="tel" placeholder="09xx xxx xxx">
+        </div>
+        <div class="field full">
+          <label for="f-size">Quy mô sử dụng dự kiến</label>
+          <select id="f-size" name="Quy mô">
+            <option value="">— Chọn quy mô —</option>
+            <option>Dưới 20 người</option>
+            <option>20 – 50 người</option>
+            <option>50 – 200 người</option>
+            <option>Trên 200 người</option>
+          </select>
+        </div>
+        <div class="field full">
+          <label for="f-msg">Nội dung cần trao đổi</label>
+          <textarea id="f-msg" name="Nội dung" placeholder="Nhu cầu, số lượng người dùng, mốc thời gian mong muốn…"></textarea>
+        </div>
+      </div>
+
+      <!-- honeypot chống spam: người thật không thấy, không điền -->
+      <div class="hp" aria-hidden="true"><label>Để trống ô này<input type="text" name="_honey" tabindex="-1" autocomplete="off"></label></div>
+
+      <div class="form-actions">
+        <button class="pill pill-green" type="submit" id="f-submit">Gửi thông tin</button>
+        <p class="form-note">Thông tin chỉ dùng để liên hệ tư vấn, không chia sẻ cho bên thứ ba.</p>
+      </div>
+      <div class="form-msg" id="form-msg" role="status" aria-live="polite"></div>
+    </form>
+  </div>
+</section>
+
 <!-- ========================= FINAL CTA ========================= -->
 <section class="final">
   <div class="wrap">
     <h2>Sẵn sàng trải nghiệm?</h2>
-    <p>Tải ứng dụng Element X, hoặc liên hệ để được cấp tài khoản và hướng dẫn cài đặt — chỉ mất khoảng 15 phút.</p>
+    <p>Tải ứng dụng Element X, hoặc để lại thông tin để được cấp tài khoản và hướng dẫn cài đặt — chỉ mất khoảng 15 phút.</p>
     <div class="hero-cta">
       <a class="pill pill-green" href="#download">Tải ứng dụng</a>
-      <a class="pill pill-ghost" href="mailto:lien-he@thay-dia-chi-cua-ban.vn">Liên hệ triển khai</a>
+      <a class="pill pill-ghost" href="#contact">Đăng ký tư vấn</a>
     </div>
   </div>
 </section>
@@ -477,7 +622,7 @@
         <h4>Nền tảng</h4>
         <a href="https://matrix.org" target="_blank" rel="noopener">Giao thức Matrix</a>
         <a href="https://element.io" target="_blank" rel="noopener">Ứng dụng Element</a>
-        <a href="mailto:lien-he@thay-dia-chi-cua-ban.vn">Liên hệ</a>
+        <a href="#contact">Liên hệ</a>
       </div>
     </div>
     <p class="disc">Matrix VN là dịch vụ triển khai độc lập, xây dựng trên giao thức mã nguồn mở Matrix và sử dụng ứng dụng Element X. Không trực thuộc và không đại diện cho The Matrix.org Foundation hay Element (Vector Creations Limited). "Matrix" và "Element" là thương hiệu của các chủ sở hữu tương ứng.</p>
@@ -508,5 +653,66 @@
     }
     inp.addEventListener('input', update);
     update();
+  })();
+
+  /* ============ Contact form ============ */
+  (function(){
+    /* ▼▼▼ CHỈ CẦN SỬA 1 DÒNG NÀY: thay bằng email thật sẽ nhận thông tin liên hệ ▼▼▼ */
+    var CONTACT_EMAIL = 'dia-chi-email-cua-ban@gmail.com';
+    /* ▲▲▲ Lần gửi đầu tiên, FormSubmit.co gửi 1 email xác nhận tới địa chỉ này — bấm kích hoạt là xong ▲▲▲ */
+
+    var form = document.getElementById('contact-form');
+    var btn  = document.getElementById('f-submit');
+    var msg  = document.getElementById('form-msg');
+    if(!form) return;
+
+    function show(kind, html){
+      msg.className = 'form-msg ' + kind;
+      msg.innerHTML = html;
+    }
+
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      /* honeypot: nếu bot điền vào ô ẩn thì bỏ qua, giả vờ thành công */
+      if(form.querySelector('[name="_honey"]').value){ show('ok','Cảm ơn bạn!'); form.reset(); return; }
+
+      var name = document.getElementById('f-name').value.trim();
+      var email = document.getElementById('f-email').value.trim();
+      if(!name || !email){ show('err','Vui lòng nhập họ tên và email để chúng tôi liên hệ lại.'); return; }
+
+      var data = {
+        'Họ và tên': name,
+        'Tổ chức': document.getElementById('f-org').value.trim(),
+        'Email': email,
+        'Điện thoại': document.getElementById('f-phone').value.trim(),
+        'Quy mô': document.getElementById('f-size').value,
+        'Nội dung': document.getElementById('f-msg').value.trim(),
+        '_subject': 'Liên hệ mới từ Matrix VN',
+        '_template': 'table',
+        '_captcha': 'false'
+      };
+
+      btn.disabled = true; var label = btn.textContent; btn.textContent = 'Đang gửi…';
+      msg.className = 'form-msg';
+
+      fetch('https://formsubmit.co/ajax/' + encodeURIComponent(CONTACT_EMAIL), {
+        method:'POST',
+        headers:{'Content-Type':'application/json','Accept':'application/json'},
+        body:JSON.stringify(data)
+      })
+      .then(function(r){ return r.json(); })
+      .then(function(res){
+        if(res && (res.success === true || res.success === 'true')){
+          show('ok','✓ Đã gửi thành công. Cảm ơn bạn — chúng tôi sẽ liên hệ lại sớm.');
+          form.reset();
+        } else {
+          throw new Error('unexpected');
+        }
+      })
+      .catch(function(){
+        show('err','Chưa gửi được. Bạn vui lòng thử lại, hoặc email trực tiếp tới <a href="mailto:'+CONTACT_EMAIL+'">'+CONTACT_EMAIL+'</a>.');
+      })
+      .finally(function(){ btn.disabled = false; btn.textContent = label; });
+    });
   })();
 </script>
