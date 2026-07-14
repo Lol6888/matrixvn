@@ -127,20 +127,15 @@
   .demo-foot b{color:var(--ink)}
 
   /* ---- Feature rows (alternating, matrix.org style) ---- */
-  .row{display:grid; grid-template-columns:1fr minmax(0,320px); gap:60px; align-items:center; padding-block:18px}
-  .row + .row{margin-top:10px}
-  .row.flip{grid-template-columns:minmax(0,320px) 1fr}
-  .row.flip .txt{order:2}
-  .step-num{display:inline-block; font-size:12.5px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--green-deep); margin-bottom:10px}
-  .row h3{font-size:clamp(21px,2.6vw,27px); margin-bottom:12px}
-  .row p{color:var(--ink-soft); font-size:16.5px; max-width:44ch}
-  .row .art{background:var(--panel); border:1px solid var(--line); border-radius:18px; aspect-ratio:1/1; width:100%; display:flex; align-items:center; justify-content:center; overflow:hidden}
-  .row .art svg{width:58%; height:58%}
+  .steps{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:26px; margin-top:46px}
+  .step .art{background:var(--panel); border:1px solid var(--line); border-radius:16px; aspect-ratio:3/2; display:flex; align-items:center; justify-content:center; overflow:hidden; margin-bottom:20px}
+  .step .art svg{width:56%; height:56%}
+  .step-num{display:inline-block; font-size:12.5px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--green-deep); margin-bottom:9px}
+  .step h3{font-size:20px; margin-bottom:9px}
+  .step p{color:var(--ink-soft); font-size:15.5px}
   @media (max-width:860px){
-    .row, .row.flip{grid-template-columns:1fr; gap:22px}
-    .row .art{order:-1; max-width:220px; justify-self:center}
-    .row.flip .txt{order:0}
-    .row p{max-width:none}
+    .steps{grid-template-columns:1fr; gap:34px; max-width:400px; margin-inline:auto}
+    .step .art{max-width:220px; margin-inline:auto; aspect-ratio:1/1}
   }
 
   /* ---- Download ---- */
@@ -372,12 +367,8 @@
       <p class="sub">Toàn bộ hệ thống vận hành theo một nguyên tắc bạn đã quen từ đời thường.</p>
     </div>
 
-    <div class="row">
-      <div class="txt">
-        <span class="step-num">Bước 1</span>
-        <h3>Bạn khóa hộp trước khi gửi</h3>
-        <p>Tin nhắn được khóa ngay trên điện thoại hoặc máy tính của bạn, trước khi rời khỏi máy dù chỉ một giây. Chìa khóa được sinh ra và ở lại trên thiết bị của bạn.</p>
-      </div>
+    <div class="steps">
+    <div class="step">
       <div class="art">
         <svg viewBox="0 0 200 150" fill="none" aria-hidden="true">
           <rect x="55" y="60" width="90" height="66" rx="8" stroke="var(--green)" stroke-width="3.5"/>
@@ -386,14 +377,14 @@
           <path d="M89 24v-4a11 11 0 0 1 22 0v4" stroke="currentColor" stroke-width="3.5"/>
         </svg>
       </div>
+      <div class="txt">
+        <span class="step-num">Bước 1</span>
+        <h3>Bạn khóa hộp trước khi gửi</h3>
+        <p>Tin nhắn được khóa ngay trên điện thoại hoặc máy tính của bạn, trước khi rời khỏi máy dù chỉ một giây. Chìa khóa được sinh ra và ở lại trên thiết bị của bạn.</p>
+      </div>
     </div>
 
-    <div class="row flip">
-      <div class="txt">
-        <span class="step-num">Bước 2</span>
-        <h3>Người đưa thư chỉ chuyển, không mở</h3>
-        <p>Máy chủ đóng vai người đưa thư: chuyển chiếc hộp đến đúng người. Nhưng máy chủ <b>không có chìa</b> — nên dù muốn cũng không thể mở ra xem bên trong.</p>
-      </div>
+    <div class="step">
       <div class="art">
         <svg viewBox="0 0 200 150" fill="none" aria-hidden="true">
           <rect x="60" y="46" width="80" height="58" rx="6" stroke="currentColor" stroke-width="3.5"/>
@@ -403,14 +394,14 @@
           <path d="M143 120h14M150 113v14" stroke="var(--deny)" stroke-width="3.5" stroke-linecap="round" transform="rotate(45 150 120)"/>
         </svg>
       </div>
+      <div class="txt">
+        <span class="step-num">Bước 2</span>
+        <h3>Người đưa thư chỉ chuyển, không mở</h3>
+        <p>Máy chủ đóng vai người đưa thư: chuyển chiếc hộp đến đúng người. Nhưng máy chủ <b>không có chìa</b> — nên dù muốn cũng không thể mở ra xem bên trong.</p>
+      </div>
     </div>
 
-    <div class="row">
-      <div class="txt">
-        <span class="step-num">Bước 3</span>
-        <h3>Chỉ người nhận mở được</h3>
-        <p>Chiếc hộp chỉ mở ra được trên máy người nhận, nơi giữ chiếc chìa duy nhất — không ở bất kỳ điểm nào trên đường đi. Trong ngành gọi đây là <b>mã hóa đầu cuối</b> (end-to-end encryption).</p>
-      </div>
+    <div class="step">
       <div class="art">
         <svg viewBox="0 0 200 150" fill="none" aria-hidden="true">
           <rect x="46" y="58" width="76" height="60" rx="7" stroke="var(--green)" stroke-width="3.5"/>
@@ -419,6 +410,12 @@
           <path d="M150 90v26m0-9h11m-11-8h9" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/>
         </svg>
       </div>
+      <div class="txt">
+        <span class="step-num">Bước 3</span>
+        <h3>Chỉ người nhận mở được</h3>
+        <p>Chiếc hộp chỉ mở ra được trên máy người nhận, nơi giữ chiếc chìa duy nhất — không ở bất kỳ điểm nào trên đường đi. Trong ngành gọi đây là <b>mã hóa đầu cuối</b> (end-to-end encryption).</p>
+      </div>
+    </div>
     </div>
 
     <p class="center sub" style="margin-top:44px">Đây chính là công nghệ Matrix — được kiểm định công khai bởi các hãng bảo mật độc lập, và cùng họ công nghệ đang được cơ quan chính phủ, quân đội nhiều nước châu Âu tin dùng.</p>
