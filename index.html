@@ -1,0 +1,512 @@
+<title>Matrix VN — Liên lạc bảo mật trên nền tảng Matrix</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root{
+    --bg:#FFFFFF; --ink:#17191C; --ink-soft:#5C6670; --line:#E6E8EB;
+    --panel:#F7F8F9; --panel-2:#F0F2F4;
+    --nav:#0A0B0D; --nav-ink:#FFFFFF; --nav-soft:#A9B0B8;
+    --green:#0DBD8B; --green-deep:#099268; --green-tint:#E4F7F0;
+    --deny:#C4432E; --deny-tint:#FBEAE6;
+    --cipher-bg:#0A0B0D; --cipher-fg:#3FD7A8; --cipher-line:#26292E;
+    --sans:"Helvetica Neue",Helvetica,Arial,"Segoe UI",Roboto,-apple-system,BlinkMacSystemFont,sans-serif;
+    --mono:"SF Mono","Cascadia Mono",Consolas,Menlo,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#0E0F11; --ink:#ECEEF0; --ink-soft:#98A0A8; --line:#24272B;
+      --panel:#16181B; --panel-2:#1C1F23;
+      --nav:#000000; --nav-ink:#FFFFFF; --nav-soft:#9199A1;
+      --green:#2DD4A7; --green-deep:#54DDB6; --green-tint:rgba(45,212,167,.12);
+      --deny:#E58472; --deny-tint:rgba(229,132,114,.13);
+      --cipher-bg:#000000; --cipher-fg:#33C79A; --cipher-line:#1E2126;
+    }
+  }
+  :root[data-theme="light"]{
+    --bg:#FFFFFF; --ink:#17191C; --ink-soft:#5C6670; --line:#E6E8EB;
+    --panel:#F7F8F9; --panel-2:#F0F2F4;
+    --nav:#0A0B0D; --nav-ink:#FFFFFF; --nav-soft:#A9B0B8;
+    --green:#0DBD8B; --green-deep:#099268; --green-tint:#E4F7F0;
+    --deny:#C4432E; --deny-tint:#FBEAE6;
+    --cipher-bg:#0A0B0D; --cipher-fg:#3FD7A8; --cipher-line:#26292E;
+  }
+  :root[data-theme="dark"]{
+    --bg:#0E0F11; --ink:#ECEEF0; --ink-soft:#98A0A8; --line:#24272B;
+    --panel:#16181B; --panel-2:#1C1F23;
+    --nav:#000000; --nav-ink:#FFFFFF; --nav-soft:#9199A1;
+    --green:#2DD4A7; --green-deep:#54DDB6; --green-tint:rgba(45,212,167,.12);
+    --deny:#E58472; --deny-tint:rgba(229,132,114,.13);
+    --cipher-bg:#000000; --cipher-fg:#33C79A; --cipher-line:#1E2126;
+  }
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){ html{scroll-behavior:auto} *,*::before,*::after{transition:none!important;animation:none!important} }
+  body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans); font-size:17px; line-height:1.6; -webkit-font-smoothing:antialiased}
+  a{color:inherit}
+  :focus-visible{outline:2px solid var(--green); outline-offset:3px; border-radius:3px}
+  h1,h2,h3{margin:0; font-weight:700; line-height:1.12; letter-spacing:-.02em; text-wrap:balance}
+  p{margin:0}
+  .wrap{max-width:1120px; margin-inline:auto; padding-inline:28px}
+  .eyebrow{font-size:13px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--green-deep)}
+
+  /* ---- Pill buttons (matrix.org style) ---- */
+  .pill{display:inline-flex; align-items:center; gap:9px; font-size:16px; font-weight:600; text-decoration:none;
+    padding:12px 30px; border-radius:1000px; border:2px solid var(--ink); transition:transform .12s ease, background .15s ease, color .15s ease; cursor:pointer}
+  .pill:hover{transform:translateY(-1px)}
+  .pill-solid{background:var(--ink); color:var(--bg)}
+  .pill-ghost{background:transparent; color:var(--ink)}
+  .pill-green{background:var(--green); border-color:var(--green); color:#04140F}
+  .pill-green:hover{filter:brightness(1.05)}
+
+  /* ---- Nav ---- */
+  header.nav{position:sticky; top:0; z-index:50; background:var(--nav); color:var(--nav-ink); border-bottom:1px solid rgba(255,255,255,.08)}
+  .nav .wrap{display:flex; align-items:center; gap:28px; height:64px}
+  .logo{display:flex; align-items:center; gap:11px; text-decoration:none; color:var(--nav-ink); font-weight:700; letter-spacing:-.01em; font-size:18px}
+  .logo .mk{width:26px; height:26px; flex:0 0 auto}
+  .logo small{display:block; font-size:10.5px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--nav-soft); line-height:1}
+  .nav nav{display:flex; gap:26px; margin-left:auto; align-items:center}
+  .nav nav a{color:var(--nav-soft); text-decoration:none; font-size:15px; font-weight:500}
+  .nav nav a:hover{color:var(--nav-ink)}
+  .nav .pill{padding:8px 20px; font-size:14.5px; border-color:var(--green); background:var(--green); color:#04140F}
+  @media (max-width:860px){ .nav nav a:not(.pill){display:none} }
+
+  /* ---- Hero ---- */
+  .hero{background:var(--nav); color:var(--nav-ink); position:relative; overflow:hidden}
+  .hero::after{content:""; position:absolute; inset:0; background:radial-gradient(1000px 500px at 78% -10%, rgba(13,189,139,.22), transparent 60%); pointer-events:none}
+  .hero .wrap{position:relative; z-index:1; display:grid; grid-template-columns:1.05fr .95fr; gap:56px; align-items:center; padding-block:84px 88px}
+  @media (max-width:900px){ .hero .wrap{grid-template-columns:1fr; gap:44px; padding-block:56px 60px} }
+  .hero .eyebrow{color:var(--green)}
+  .hero h1{font-size:clamp(34px,5.4vw,56px); margin:18px 0 0; letter-spacing:-.03em}
+  .hero h1 em{font-style:normal; color:var(--green)}
+  .hero .lead{margin-top:22px; font-size:19px; color:var(--nav-soft); max-width:44ch}
+  .hero-cta{display:flex; gap:14px; margin-top:34px; flex-wrap:wrap}
+  .hero .pill-ghost{color:var(--nav-ink); border-color:rgba(255,255,255,.35)}
+  .hero .trust{margin-top:26px; font-size:13.5px; color:var(--nav-soft); display:flex; align-items:center; gap:8px}
+  .hero .trust svg{flex:0 0 auto}
+
+  /* Phone mock in hero */
+  .phone{justify-self:center; width:270px; max-width:100%; background:#0F1113; border:1px solid #2A2E33; border-radius:34px; padding:14px 12px 18px; box-shadow:0 40px 80px -30px rgba(0,0,0,.6)}
+  .phone .notch{width:110px; height:6px; background:#2A2E33; border-radius:100px; margin:2px auto 14px}
+  .phone .room{font-size:13px; color:var(--nav-soft); padding:0 6px 12px; border-bottom:1px solid #22262B; display:flex; align-items:center; gap:8px}
+  .phone .room .dot{width:8px; height:8px; border-radius:50%; background:var(--green)}
+  .bubbles{display:flex; flex-direction:column; gap:9px; padding:14px 4px 4px}
+  .b{max-width:80%; padding:9px 13px; border-radius:15px; font-size:13.5px; line-height:1.45}
+  .b.them{align-self:flex-start; background:#1B1F24; color:#E7EAED; border-bottom-left-radius:5px}
+  .b.me{align-self:flex-end; background:var(--green); color:#04140F; border-bottom-right-radius:5px}
+  .b.lock{align-self:center; background:transparent; color:var(--nav-soft); font-size:11.5px; display:flex; align-items:center; gap:6px; max-width:none}
+
+  /* ---- Section frame ---- */
+  section{padding-block:82px}
+  .center{text-align:center; max-width:60ch; margin-inline:auto}
+  .center .eyebrow{display:block; margin-bottom:14px}
+  h2{font-size:clamp(27px,3.6vw,38px)}
+  .sub{color:var(--ink-soft); font-size:18px; margin-top:16px}
+
+  /* ---- Interactive demo ---- */
+  .demo{background:var(--panel); border-top:1px solid var(--line); border-bottom:1px solid var(--line)}
+  .demo-grid{display:grid; grid-template-columns:1fr 30px 1.1fr 30px 1fr; gap:14px; align-items:stretch; margin-top:40px}
+  @media (max-width:840px){ .demo-grid{grid-template-columns:1fr} .demo-arrow{transform:rotate(90deg); justify-self:center} }
+  .pane{background:var(--bg); border:1px solid var(--line); border-radius:14px; padding:18px; display:flex; flex-direction:column; gap:11px; min-width:0}
+  .pane-tag{font-size:11.5px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft)}
+  .pane input{font:inherit; color:inherit; background:transparent; border:none; border-bottom:1.5px solid var(--line); padding:7px 2px; width:100%}
+  .pane input:focus{outline:none; border-bottom-color:var(--green)}
+  .pane-cipher{background:var(--cipher-bg); border-color:var(--cipher-line)}
+  .pane-cipher .pane-tag{color:var(--deny)}
+  .stamp{display:inline-block; border:1.5px solid var(--deny); color:var(--deny); border-radius:5px; padding:2px 8px; font-size:10.5px; transform:rotate(-1.5deg)}
+  .cipher-out{font-family:var(--mono); font-size:13px; color:var(--cipher-fg); word-break:break-all; line-height:1.7; min-height:3.6em; margin:0}
+  .plain-out{min-height:2em; padding-top:6px; font-size:15.5px}
+  .pane-note{font-size:12.5px; color:var(--ink-soft); margin:0}
+  .pane-cipher .pane-note{color:#6C7C90}
+  .demo-arrow{align-self:center; color:var(--ink-soft); flex-shrink:0}
+  .demo-foot{margin-top:22px; text-align:center; font-size:15.5px; color:var(--ink-soft); max-width:74ch; margin-inline:auto}
+  .demo-foot b{color:var(--ink)}
+
+  /* ---- Feature rows (alternating, matrix.org style) ---- */
+  .row{display:grid; grid-template-columns:1fr 1fr; gap:60px; align-items:center; padding-block:26px}
+  .row + .row{margin-top:28px}
+  @media (max-width:860px){ .row{grid-template-columns:1fr; gap:30px} .row .art{order:-1} }
+  .row.flip .txt{order:2}
+  .row h3{font-size:clamp(23px,3vw,30px); margin-bottom:14px}
+  .row p{color:var(--ink-soft); font-size:17px; max-width:46ch}
+  .row .art{background:var(--panel); border:1px solid var(--line); border-radius:20px; aspect-ratio:4/3; display:flex; align-items:center; justify-content:center; overflow:hidden}
+  .row .art svg{width:74%; height:74%}
+
+  /* ---- Download ---- */
+  .dl{background:var(--nav); color:var(--nav-ink)}
+  .dl .eyebrow{color:var(--green)}
+  .dl h2{color:#fff}
+  .dl .sub{color:var(--nav-soft)}
+  .badges{display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-top:34px}
+  .badge{display:flex; align-items:center; gap:13px; text-decoration:none; background:#000; border:1px solid #33383E; border-radius:13px; padding:11px 20px; min-width:210px; transition:border-color .15s ease, transform .12s ease}
+  .badge:hover{border-color:var(--green); transform:translateY(-2px)}
+  .badge svg{flex:0 0 auto}
+  .badge .bt{display:flex; flex-direction:column; line-height:1.15; color:#fff}
+  .badge .bt small{font-size:11px; color:#B9BFC5; letter-spacing:.02em}
+  .badge .bt b{font-size:19px; font-weight:600; letter-spacing:-.01em}
+  .dl .platforms{margin-top:26px; text-align:center; font-size:14px; color:var(--nav-soft)}
+
+  /* ---- Compare table ---- */
+  .table-scroll{overflow-x:auto; margin-top:40px; border:1px solid var(--line); border-radius:16px; background:var(--bg)}
+  table{border-collapse:collapse; width:100%; min-width:640px; font-size:15.5px}
+  th,td{padding:16px 20px; text-align:left; vertical-align:top}
+  thead th{font-size:12.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-soft); border-bottom:1.5px solid var(--line); font-weight:700}
+  thead th:last-child{color:var(--green-deep)}
+  tbody tr + tr td{border-top:1px solid var(--line)}
+  td.q{font-weight:600; width:32%}
+  .yes,.no{display:inline-block; border-radius:6px; padding:3px 11px; font-size:14px; font-weight:600}
+  .yes{background:var(--green-tint); color:var(--green-deep)}
+  .no{background:var(--deny-tint); color:var(--deny)}
+  td .why{display:block; margin-top:6px; font-size:13.5px; color:var(--ink-soft); font-weight:400}
+
+  /* ---- Honesty ---- */
+  .honest{background:var(--panel); border-top:1px solid var(--line); border-bottom:1px solid var(--line)}
+  .honest .box{max-width:74ch; margin-inline:auto}
+  .honest h2{margin-bottom:16px}
+  .honest p{color:var(--ink-soft); margin-bottom:16px}
+  .honest ul{margin:0; padding-left:22px; color:var(--ink-soft)}
+  .honest li{margin-bottom:9px}
+  .honest li b{color:var(--ink)}
+  .honest .key{color:var(--ink); font-weight:600}
+
+  /* ---- FAQ ---- */
+  .faq{max-width:74ch; margin:40px auto 0}
+  details{border-bottom:1px solid var(--line)}
+  summary{cursor:pointer; list-style:none; padding:20px 4px; font-weight:600; font-size:17px; display:flex; justify-content:space-between; gap:16px; align-items:baseline}
+  summary::-webkit-details-marker{display:none}
+  summary::after{content:"+"; font-size:24px; color:var(--green); font-weight:400; flex-shrink:0}
+  details[open] summary::after{content:"–"}
+  details .a{padding:0 4px 22px; color:var(--ink-soft); max-width:66ch; margin:0}
+
+  /* ---- Final CTA ---- */
+  .final{text-align:center}
+  .final h2{font-size:clamp(28px,4vw,42px)}
+  .final p{color:var(--ink-soft); max-width:52ch; margin:16px auto 30px}
+  .final .hero-cta{justify-content:center}
+  .final .pill-ghost{color:var(--ink); border-color:var(--ink)}
+
+  /* ---- Footer ---- */
+  footer{background:var(--nav); color:var(--nav-soft); padding-block:48px 40px; font-size:14px}
+  footer .cols{display:grid; grid-template-columns:1.4fr 1fr 1fr; gap:36px}
+  @media (max-width:720px){ footer .cols{grid-template-columns:1fr 1fr} }
+  footer h4{color:#fff; font-size:13px; letter-spacing:.1em; text-transform:uppercase; margin:0 0 14px; font-weight:700}
+  footer a{color:var(--nav-soft); text-decoration:none; display:block; margin-bottom:9px}
+  footer a:hover{color:#fff}
+  footer .disc{margin-top:34px; padding-top:22px; border-top:1px solid rgba(255,255,255,.1); font-size:12.5px; line-height:1.6; color:#7A828A; max-width:80ch}
+</style>
+
+<!-- ========================= NAV ========================= -->
+<header class="nav">
+  <div class="wrap">
+    <a class="logo" href="#top">
+      <svg class="mk" viewBox="0 0 100 100" aria-hidden="true">
+        <path d="M12 6v88h9V15h20V6z M88 94V6h-9v79H59v9z" fill="currentColor"/>
+        <rect x="34" y="30" width="8" height="40" fill="var(--green)"/>
+        <path d="M46 30c9 0 9 8 9 14v26h-8V46c0-5-1-8-5-8z" fill="currentColor"/>
+      </svg>
+      <span>Matrix&nbsp;VN<small>Bảo mật · trên Matrix</small></span>
+    </a>
+    <nav>
+      <a href="#how">Cách hoạt động</a>
+      <a href="#compare">So sánh</a>
+      <a href="#faq">Hỏi đáp</a>
+      <a class="pill" href="#download">Tải ứng dụng</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ========================= HERO ========================= -->
+<div id="top"></div>
+<section class="hero">
+  <div class="wrap">
+    <div>
+      <span class="eyebrow">Nền tảng liên lạc mở &amp; bảo mật cho Việt Nam</span>
+      <h1>Tin nhắn của bạn, <em>chỉ bạn</em> đọc được.</h1>
+      <p class="lead">Ứng dụng nhắn tin, gọi thoại và video mã hóa đầu cuối — xây dựng trên nền tảng mã nguồn mở Matrix, vận hành trên máy chủ riêng của tổ chức bạn.</p>
+      <div class="hero-cta">
+        <a class="pill pill-green" href="#download">Tải ứng dụng Element X</a>
+        <a class="pill pill-ghost" href="#how">Xem cách hoạt động</a>
+      </div>
+      <p class="trust">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5z" stroke="var(--green)" stroke-width="2" stroke-linejoin="round"/></svg>
+        Mã hóa đầu cuối · Mã nguồn mở · Máy chủ đặt riêng
+      </p>
+    </div>
+    <div class="phone" aria-hidden="true">
+      <div class="notch"></div>
+      <div class="room"><span class="dot"></span> Phòng Ban Điều Hành · <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M6 10V8a6 6 0 0 1 12 0v2m-13 0h14v10H5z" stroke="var(--green)" stroke-width="2" stroke-linejoin="round"/></svg></div>
+      <div class="bubbles">
+        <div class="b lock"><svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M6 10V8a6 6 0 0 1 12 0v2m-13 0h14v10H5z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg> Được mã hóa đầu cuối</div>
+        <div class="b them">Báo cáo quý đã gửi anh chưa?</div>
+        <div class="b me">Rồi, trong phòng này luôn nhé 🔒</div>
+        <div class="b them">Chuẩn. Ở đây thì yên tâm.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========================= INTERACTIVE DEMO ========================= -->
+<section class="demo" id="demo">
+  <div class="wrap">
+    <div class="center">
+      <span class="eyebrow">Thấy tận mắt</span>
+      <h2>Máy chủ nhìn thấy gì khi bạn nhắn tin?</h2>
+      <p class="sub">Gõ thử một câu bên dưới — và xem điều gì thực sự đi qua máy chủ.</p>
+    </div>
+    <div class="demo-grid">
+      <div class="pane">
+        <span class="pane-tag">Trên máy của bạn</span>
+        <input id="demo-in" type="text" value="Gặp nhau 3h chiều nhé" maxlength="80" aria-label="Gõ thử một tin nhắn">
+        <p class="pane-note">Tin nhắn được khóa ngay tại đây, trước khi rời khỏi máy.</p>
+      </div>
+      <svg class="demo-arrow" width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><path d="M6 14h14m-5-5 5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div class="pane pane-cipher">
+        <span class="pane-tag"><span class="stamp">Máy chủ chỉ thấy dòng này</span></span>
+        <p class="cipher-out" id="demo-cipher"></p>
+        <p class="pane-note">Dãy ký tự vô nghĩa — kể cả người quản trị hệ thống cũng chỉ thấy đúng như vậy.</p>
+      </div>
+      <svg class="demo-arrow" width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><path d="M6 14h14m-5-5 5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div class="pane">
+        <span class="pane-tag">Trên máy người nhận</span>
+        <p class="plain-out" id="demo-out">Gặp nhau 3h chiều nhé</p>
+        <p class="pane-note">Chỉ máy người nhận có chìa khóa để mở lại tin nhắn.</p>
+      </div>
+    </div>
+    <p class="demo-foot"><b>Nội dung thật của tin nhắn không bao giờ tồn tại trên máy chủ</b> — thứ máy chủ lưu và chuyển đi chỉ là bản đã khóa.</p>
+  </div>
+</section>
+
+<!-- ========================= HOW IT WORKS ========================= -->
+<section id="how">
+  <div class="wrap">
+    <div class="center">
+      <span class="eyebrow">Cách hoạt động</span>
+      <h2>Chiếc hộp khóa và người đưa thư</h2>
+      <p class="sub">Toàn bộ hệ thống vận hành theo một nguyên tắc bạn đã quen từ đời thường.</p>
+    </div>
+
+    <div class="row">
+      <div class="txt">
+        <h3>Bạn khóa hộp trước khi gửi</h3>
+        <p>Tin nhắn được khóa ngay trên điện thoại hoặc máy tính của bạn, trước khi rời khỏi máy dù chỉ một giây. Chìa khóa được sinh ra và ở lại trên thiết bị của bạn.</p>
+      </div>
+      <div class="art">
+        <svg viewBox="0 0 200 150" fill="none" aria-hidden="true">
+          <rect x="55" y="60" width="90" height="66" rx="8" stroke="var(--green)" stroke-width="3.5"/>
+          <path d="M62 70 100 96 138 70" stroke="var(--green)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <rect x="82" y="24" width="36" height="30" rx="7" fill="var(--panel)" stroke="currentColor" stroke-width="3.5"/>
+          <path d="M89 24v-4a11 11 0 0 1 22 0v4" stroke="currentColor" stroke-width="3.5"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="row flip">
+      <div class="txt">
+        <h3>Người đưa thư chỉ chuyển, không mở</h3>
+        <p>Máy chủ đóng vai người đưa thư: chuyển chiếc hộp đến đúng người. Nhưng máy chủ <b>không có chìa</b> — nên dù muốn cũng không thể mở ra xem bên trong.</p>
+      </div>
+      <div class="art">
+        <svg viewBox="0 0 200 150" fill="none" aria-hidden="true">
+          <rect x="60" y="46" width="80" height="58" rx="6" stroke="currentColor" stroke-width="3.5"/>
+          <path d="M60 66h80" stroke="currentColor" stroke-width="3.5"/>
+          <path d="M20 118h160M34 128h56" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" opacity=".4"/>
+          <circle cx="150" cy="120" r="15" fill="var(--panel)" stroke="var(--deny)" stroke-width="3.5"/>
+          <path d="M143 120h14M150 113v14" stroke="var(--deny)" stroke-width="3.5" stroke-linecap="round" transform="rotate(45 150 120)"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="txt">
+        <h3>Chỉ người nhận mở được</h3>
+        <p>Chiếc hộp chỉ mở ra được trên máy người nhận, nơi giữ chiếc chìa duy nhất — không ở bất kỳ điểm nào trên đường đi. Trong ngành gọi đây là <b>mã hóa đầu cuối</b> (end-to-end encryption).</p>
+      </div>
+      <div class="art">
+        <svg viewBox="0 0 200 150" fill="none" aria-hidden="true">
+          <rect x="46" y="58" width="76" height="60" rx="7" stroke="var(--green)" stroke-width="3.5"/>
+          <path d="M46 58 62 36h44l16 22" stroke="var(--green)" stroke-width="3.5" stroke-linejoin="round"/>
+          <circle cx="150" cy="76" r="14" stroke="currentColor" stroke-width="3.5"/>
+          <path d="M150 90v26m0-9h11m-11-8h9" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </div>
+
+    <p class="center sub" style="margin-top:44px">Đây chính là công nghệ Matrix — được kiểm định công khai bởi các hãng bảo mật độc lập, và cùng họ công nghệ đang được cơ quan chính phủ, quân đội nhiều nước châu Âu tin dùng.</p>
+  </div>
+</section>
+
+<!-- ========================= DOWNLOAD ========================= -->
+<section class="dl" id="download">
+  <div class="wrap">
+    <div class="center">
+      <span class="eyebrow">Tải ứng dụng</span>
+      <h2>Cài Element X, đăng nhập, xong.</h2>
+      <p class="sub">Ứng dụng chính thức trên nền Matrix. Khi đăng nhập, chọn máy chủ của tổ chức bạn — phần còn lại tự động.</p>
+    </div>
+    <div class="badges">
+      <a class="badge" href="https://apps.apple.com/app/element-x-secure-chat-call/id1631335820" target="_blank" rel="noopener">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M17.05 12.94c-.03-2.6 2.13-3.85 2.23-3.91-1.22-1.78-3.11-2.02-3.78-2.05-1.61-.16-3.14.94-3.95.94-.81 0-2.07-.92-3.4-.9-1.75.03-3.36 1.02-4.26 2.58-1.82 3.15-.47 7.82 1.3 10.38.86 1.25 1.89 2.66 3.24 2.61 1.3-.05 1.79-.84 3.36-.84 1.57 0 2.01.84 3.39.81 1.4-.02 2.29-1.28 3.15-2.54.99-1.46 1.4-2.87 1.42-2.94-.03-.01-2.73-1.05-2.76-4.15zM14.6 5.3c.72-.87 1.2-2.08 1.07-3.3-1.03.04-2.28.69-3.02 1.56-.66.77-1.24 2-1.09 3.18 1.15.09 2.32-.58 3.04-1.44z"/></svg>
+        <span class="bt"><small>Tải trên</small><b>App Store</b></span>
+      </a>
+      <a class="badge" href="https://play.google.com/store/apps/details?id=io.element.android.x" target="_blank" rel="noopener">
+        <svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.6 2.2c-.3.3-.5.8-.5 1.4v16.8c0 .6.2 1.1.5 1.4l.1.1 9.4-9.4v-.2z" fill="#00D0FF"/><path d="M16.5 15.3 13.1 12v-.2l3.4-3.4.1.1 4 2.3c1.2.6 1.2 1.7 0 2.4z" fill="#FFCE00"/><path d="M16.6 15.2 13.1 12l-9.5 9.5c.4.4 1 .5 1.8.1z" fill="#FF3D47"/><path d="M5.4 2.3c-.8-.4-1.4-.3-1.8.1l9.5 9.4 3.5-3.4z" fill="#00F076"/></svg>
+        <span class="bt"><small>Tải trên</small><b>Google Play</b></span>
+      </a>
+    </div>
+    <p class="platforms">Cũng dùng được trên Windows, macOS, Linux và trình duyệt web.</p>
+  </div>
+</section>
+
+<!-- ========================= COMPARE ========================= -->
+<section id="compare">
+  <div class="wrap">
+    <div class="center">
+      <span class="eyebrow">So sánh</span>
+      <h2>Ai đọc được tin nhắn của bạn?</h2>
+      <p class="sub">Khác biệt lớn nhất không nằm ở tính năng — mà ở chỗ <b>ai có khả năng đọc</b> những gì bạn gửi.</p>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th></th><th>Ứng dụng chat thông thường</th><th>Matrix VN · Element X</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="q">Bạn và người bạn nhắn tin</td>
+            <td><span class="yes">Đọc được</span></td>
+            <td><span class="yes">Đọc được</span></td>
+          </tr>
+          <tr>
+            <td class="q">Đơn vị vận hành ứng dụng</td>
+            <td><span class="no">Đọc được</span><span class="why">Tin nhắn nằm trên máy chủ của họ ở dạng đọc được, hoặc họ giữ chìa khóa.</span></td>
+            <td><span class="yes">Không</span><span class="why">Không ai giữ chìa khóa thay bạn — muốn đọc cũng không có cách nào.</span></td>
+          </tr>
+          <tr>
+            <td class="q">Tin tặc, nếu chiếm được máy chủ</td>
+            <td><span class="no">Lấy được toàn bộ</span><span class="why">Lịch sử trò chuyện của hàng triệu người gom một chỗ.</span></td>
+            <td><span class="yes">Chỉ thấy ký tự vô nghĩa</span><span class="why">Thứ nằm trên máy chủ chỉ là các bản đã khóa.</span></td>
+          </tr>
+          <tr>
+            <td class="q">Bên thứ ba, quảng cáo</td>
+            <td><span class="no">Có thể bị chia sẻ</span><span class="why">Tùy chính sách từng công ty, thay đổi theo thời gian.</span></td>
+            <td><span class="yes">Không có gì để chia sẻ</span><span class="why">Chạy trên máy chủ riêng của tổ chức, không có bên thứ ba.</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ========================= HONESTY ========================= -->
+<section class="honest">
+  <div class="wrap">
+    <div class="box">
+      <span class="eyebrow">Chúng tôi nói thẳng</span>
+      <h2 style="margin-top:14px">Không hứa "tuyệt đối", chỉ nói điều làm được</h2>
+      <p>Không hệ thống nào trên đời an toàn tuyệt đối 100% — nơi nào hứa vậy là đang quảng cáo. Điều chúng tôi cam kết được, vì chính kiến trúc hệ thống quy định: <span class="key">máy chủ và người vận hành không có khả năng đọc tin nhắn của bạn.</span></p>
+      <p>Phần còn lại của sự an toàn nằm trong tay bạn, với ba thói quen đơn giản:</p>
+      <ul>
+        <li><b>Cất mã khôi phục cẩn thận</b> — như cất chìa khóa két sắt.</li>
+        <li><b>Đặt khóa màn hình</b> cho điện thoại và máy tính.</li>
+        <li><b>Chỉ xác nhận thiết bị của chính mình</b> khi ứng dụng hỏi.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ========================= FAQ ========================= -->
+<section id="faq">
+  <div class="wrap">
+    <div class="center">
+      <span class="eyebrow">Hỏi đáp</span>
+      <h2>Điều bạn có thể đang thắc mắc</h2>
+    </div>
+    <div class="faq">
+      <details>
+        <summary>Đổi điện thoại mới thì tin nhắn cũ còn không?</summary>
+        <p class="a">Còn. Bạn đăng nhập trên máy mới, nhập mã khôi phục được cấp khi tạo tài khoản — toàn bộ lịch sử trò chuyện trở lại đầy đủ.</p>
+      </details>
+      <details>
+        <summary>Quên mật khẩu, hoặc mất mã khôi phục thì sao?</summary>
+        <p class="a">Quên mật khẩu: quản trị viên cấp lại được, không mất gì. Nhưng nếu vừa mất máy vừa mất mã khôi phục, lịch sử tin nhắn cũ không cứu lại được — vì không ai khác giữ chìa khóa thay bạn. Đó chính là cái giá của việc "kể cả chúng tôi cũng không đọc được". Hãy cất mã khôi phục như cất giấy tờ quan trọng.</p>
+      </details>
+      <details>
+        <summary>Ảnh và file tôi gửi được lưu ở đâu?</summary>
+        <p class="a">Máy chủ chỉ giữ bản đã khóa, tối đa 90 ngày rồi tự xóa. Bản đọc được chỉ nằm trên máy người gửi và người nhận. File cần giữ lâu dài, bạn tải về máy trong vòng 90 ngày.</p>
+      </details>
+      <details>
+        <summary>Vì sao "Element X" mà lại là dịch vụ của Việt Nam?</summary>
+        <p class="a">Element X là ứng dụng mã nguồn mở, miễn phí, chạy trên chuẩn mở Matrix. Chúng tôi vận hành máy chủ riêng đặt cho tổ chức bạn và dùng ứng dụng Element X để kết nối vào đó — dữ liệu thuộc về bạn, không đi qua máy chủ của bất kỳ ai khác. Giống như dùng trình duyệt Chrome để vào website của riêng mình.</p>
+      </details>
+      <details>
+        <summary>Gọi thoại và video có được bảo vệ như tin nhắn không?</summary>
+        <p class="a">Có. Cuộc gọi riêng và họp nhóm đều đi qua kênh mã hóa, nội dung cuộc gọi được bảo vệ tương tự tin nhắn.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ========================= FINAL CTA ========================= -->
+<section class="final">
+  <div class="wrap">
+    <h2>Sẵn sàng trải nghiệm?</h2>
+    <p>Tải ứng dụng Element X, hoặc liên hệ để được cấp tài khoản và hướng dẫn cài đặt — chỉ mất khoảng 15 phút.</p>
+    <div class="hero-cta">
+      <a class="pill pill-green" href="#download">Tải ứng dụng</a>
+      <a class="pill pill-ghost" href="mailto:lien-he@thay-dia-chi-cua-ban.vn">Liên hệ triển khai</a>
+    </div>
+  </div>
+</section>
+
+<!-- ========================= FOOTER ========================= -->
+<footer>
+  <div class="wrap">
+    <div class="cols">
+      <div>
+        <h4>Matrix VN</h4>
+        <p style="color:var(--nav-soft); margin:0 0 8px; max-width:32ch">Nền tảng liên lạc bảo mật cho tổ chức Việt Nam, xây dựng trên chuẩn mở Matrix.</p>
+      </div>
+      <div>
+        <h4>Sản phẩm</h4>
+        <a href="#how">Cách hoạt động</a>
+        <a href="#compare">So sánh bảo mật</a>
+        <a href="#download">Tải ứng dụng</a>
+        <a href="#faq">Hỏi đáp</a>
+      </div>
+      <div>
+        <h4>Nền tảng</h4>
+        <a href="https://matrix.org" target="_blank" rel="noopener">Giao thức Matrix</a>
+        <a href="https://element.io" target="_blank" rel="noopener">Ứng dụng Element</a>
+        <a href="mailto:lien-he@thay-dia-chi-cua-ban.vn">Liên hệ</a>
+      </div>
+    </div>
+    <p class="disc">Matrix VN là dịch vụ triển khai độc lập, xây dựng trên giao thức mã nguồn mở Matrix và sử dụng ứng dụng Element X. Không trực thuộc và không đại diện cho The Matrix.org Foundation hay Element (Vector Creations Limited). "Matrix" và "Element" là thương hiệu của các chủ sở hữu tương ứng.</p>
+  </div>
+</footer>
+
+<script>
+  (function(){
+    var CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+    function scramble(s){
+      if(!s) return '';
+      var h = 2166136261;
+      for(var i=0;i<s.length;i++){ h ^= s.charCodeAt(i); h = Math.imul(h,16777619) >>> 0; }
+      var x = h||1, out='', n = Math.max(30, Math.ceil(s.length*1.9));
+      for(var j=0;j<n;j++){
+        x = (x ^ (x<<13)) >>> 0; x = (x ^ (x>>>17)) >>> 0; x = (x ^ (x<<5)) >>> 0;
+        out += CHARS[x % 64];
+      }
+      return out;
+    }
+    var inp=document.getElementById('demo-in'),
+        cip=document.getElementById('demo-cipher'),
+        out=document.getElementById('demo-out');
+    function update(){
+      var v=inp.value;
+      cip.textContent = v ? 'AwgBEA.'+scramble(v) : '';
+      out.textContent = v || '…';
+    }
+    inp.addEventListener('input', update);
+    update();
+  })();
+</script>
